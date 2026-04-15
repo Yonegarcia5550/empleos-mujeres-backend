@@ -6,11 +6,13 @@ import authRoutes from "./routes/authRoutes.js";
 import vacanteRoutes from "./routes/VacanteRoutes.js";
 import { verificarToken } from "./middlewares/authMiddleware.js";
 import postulacionRoutes from "./routes/postulacionRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
 
 dotenv.config();
 connectDB();
 
 const app = express();
+
 
 // ✅ MIDDLEWARES GLOBALES
 app.use(cors());
@@ -19,6 +21,7 @@ app.use(express.json());
 // ✅ RUTAS
 app.use("/auth", authRoutes);
 app.use("/vacantes", vacanteRoutes);
+app.use("/admin", adminRoutes);
 
 // Ruta pública de prueba
 app.get("/", (req, res) => {

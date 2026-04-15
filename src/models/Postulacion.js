@@ -12,6 +12,32 @@ const postulacionSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    nombre: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    correo: {
+      type: String,
+      required: true,
+      trim: true,
+      lowercase: true,
+    },
+    telefono: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    experiencia: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    mensaje: {
+      type: String,
+      default: "",
+      trim: true,
+    },
     estado: {
       type: String,
       enum: ["enviada", "revisada", "aceptada", "rechazada"],

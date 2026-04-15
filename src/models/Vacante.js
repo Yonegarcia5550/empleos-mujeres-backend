@@ -26,23 +26,28 @@ const vacanteSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    postulantes: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      }
+    ],
     lat: {
-  type: Number,
-  required: true
-      },
-      lng: {
-        type: Number,
-        required: true
-      },
+      type: Number,
+      required: true
+    },
+    lng: {
+      type: Number,
+      required: true
+    },
     telefono: {
-  type: String,
-  required: false
-},
-direccionCompleta: {
-  type: String,
-  required: false
-}
-
+      type: String,
+      required: false
+    },
+    direccionCompleta: {
+      type: String,
+      required: false
+    }
   },
   { timestamps: true }
 );

@@ -1,84 +1,95 @@
-import User from "../models/User.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import User from "../models/User.js";
 
-/* ======================
-   REGISTRO
-====================== */
-/*export const register = async (req, res) => {
+export const register = async (req, res) => {
   try {
-    let { nombre, correo, password, rol } = req.body;
+    const { nombre, correo, telefono, password, rol } = req.body;
 
     if (!nombre || !correo || !password) {
       return res.status(400).json({
-        msg: "Todos los campos son obligatorios",
+        mensaje: "Nombre, correo y contraseña son obligatorios",
       });
     }
 
-    correo = correo.toLowerCase();
+    const correoNormalizado = correo.toLowerCase().trim();
 
-    const existeUsuario = await User.findOne({ correo });
+    const existeUsuario = await User.findOne({ correo: correoNormalizado });
+
     if (existeUsuario) {
       return res.status(400).json({
-        msg: "El correo ya está registrado",
+        mensaje: "Ya existe una cuenta con ese correo",
       });
     }
 
-    // ✅ Validar rol
-    if (!rol) {
-      rol = "buscadora";
-    }
+    const passwordHasheado = await bcrypt.hash(password, 10);
 
-    if (!["buscadora", "empresa"].includes(rol)) {
-      return res.status(400).json({
-        msg: "Rol inválido",
-      });
-    }
-
-    const salt = await bcrypt.genSalt(10);
-    const passwordHash = await bcrypt.hash(password, salt);
-
-    const usuario = await User.create({
-      nombre,
-      correo,
-      password: passwordHash,
-      rol,
+    const nuevoUsuario = await User.create({
+      nombre: nombre.trim(),
+      correo: correoNormalizado,
+      telefono: telefono?.trim() || "",
+      password: passwordHasheado,
+      rol: "buscadora",
+      estadoEmpresa: "pendiente",
     });
 
+    const token = jwt.sign(
+      {
+        id: nuevoUsuario._id,
+        rol: nuevoUsuario.rol,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: process.env.JWT_EXPIRES || "7d",
+      }
+    );
+
     res.status(201).json({
-      msg: "Usuario registrado correctamente",
+      mensaje: "Usuario registrado correctamente 💜",
+      token,
       usuario: {
-        id: usuario._id,
-        nombre: usuario.nombre,
-        correo: usuario.correo,
-        rol: usuario.rol,
+        id: nuevoUsuario._id,
+        nombre: nuevoUsuario.nombre,
+        correo: nuevoUsuario.correo,
+        telefono: nuevoUsuario.telefono,
+        rol: nuevoUsuario.rol,
       },
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ msg: "Error en el servidor" });
+    console.error("Error en register:", error);
+    res.status(500).json({
+      mensaje: "Error al registrar usuario",
+      error: error.message,
+    });
   }
-};*/
+};
 
-/* ======================
-   LOGIN
-====================== */
-/*export const login = async (req, res) => {
+export const login = async (req, res) => {
   try {
     const { correo, password } = req.body;
 
-    const usuario = await User.findOne({ correo });
-    if (!usuario) {
-      return res.status(404).json({ msg: "Usuario no existe" });
+    if (!correo || !password) {
+      return res.status(400).json({
+        mensaje: "Correo y contraseña son obligatorios",
+      });
     }
 
-    const passwordCorrecto = await bcrypt.compare(
-      password,
-      usuario.password
-    );
+    const correoNormalizado = correo.toLowerCase().trim();
 
-    if (!passwordCorrecto) {
-      return res.status(401).json({ msg: "Password incorrecto" });
+    const usuario = await User.findOne({ correo: correoNormalizado });
+
+    if (!usuario) {
+      return res.status(404).json({
+        mensaje: "Usuario no encontrado",
+      });
+    }
+
+    const passwordValido = await bcrypt.compare(password, usuario.password);
+
+    if (!passwordValido) {
+      return res.status(401).json({
+        mensaje: "Contraseña incorrecta",
+      });
     }
 
     const token = jwt.sign(
@@ -88,30 +99,26 @@ import jwt from "jsonwebtoken";
       },
       process.env.JWT_SECRET,
       {
-        expiresIn: "1d",
+        expiresIn: process.env.JWT_EXPIRES || "7d",
       }
     );
 
     res.json({
-      msg: "Login correcto",
+      mensaje: "Login exitoso ✅",
       token,
       usuario: {
         id: usuario._id,
         nombre: usuario.nombre,
         correo: usuario.correo,
+        telefono: usuario.telefono,
         rol: usuario.rol,
       },
-    });*/
-    export const login = (req, res) => {
-  const { correo, password } = req.body;
-
-  if (correo === "test@correo.com" && password === "123456") {
-    return res.json({ token: "token-prueba" });
+    });
+  } catch (error) {
+    console.error("Error en login:", error);
+    res.status(500).json({
+      mensaje: "Error al iniciar sesión",
+      error: error.message,
+    });
   }
-
-  res.status(401).json({ msg: "Credenciales incorrectas" });
-};
-
-export const register = (req, res) => {
-  res.json({ msg: "Registro ok" });
 };

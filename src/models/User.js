@@ -14,19 +14,31 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
+    telefono: {
+      type: String,
+      default: "",
+      trim: true,
+    },
     password: {
       type: String,
       required: true,
     },
     rol: {
       type: String,
-      enum: ["buscadora", "empresa"],
+      enum: ["buscadora", "empresa", "superusuario"],
       default: "buscadora",
     },
+    estadoEmpresa: {
+      type: String,
+      enum: ["pendiente", "aprobada", "rechazada"],
+      default: "pendiente",
+    }
   },
   {
     timestamps: true,
   }
 );
 
-export default mongoose.model("User", userSchema);
+const User = mongoose.model("User", userSchema);
+
+export default User;

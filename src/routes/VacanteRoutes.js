@@ -1,41 +1,35 @@
 import express from "express";
 import {
   crearVacante,
-  listarVacantes,
   obtenerVacantes,
   obtenerVacante,
   eliminarVacante,
-  postularVacante,
   verPostulantes,
   buscarPorColonia,
-  actualizarVacante
+  actualizarVacante,
+  misVacantes,
+  postularVacante
 } from "../controllers/vacanteController.js";
+
+import { verificarToken } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-// 📌 LISTAR TODAS
+// rutas específicas primero
+router.get("/buscar/colonia", buscarPorColonia);
+router.get("/empresa/mias", verificarToken, misVacantes);
+router.get("/:id/postulantes", verificarToken, verPostulantes);
+
+// rutas públicas
+router.get("/:id", obtenerVacante);
 router.get("/", obtenerVacantes);
 
-// 📌 O listarVacantes (elige uno)
-// router.get("/", listarVacantes);
+// postulaciones
+router.post("/:id/postular", verificarToken, postularVacante);
 
-// 📌 OBTENER POR ID
-router.get("/:id", obtenerVacante);
-
-// 📌 CREAR
-router.post("/", crearVacante);
-
-// 📌 ELIMINAR
-router.delete("/:id", eliminarVacante);
-
-// 📌 POSTULAR
-router.post("/:id/postular", postularVacante);
-
-// 📌 VER POSTULANTES
-router.get("/:id/postulantes", verPostulantes);
-// buscar por colonia 
-router.get("/buscar/colonia", buscarPorColonia);
-//actualizar vacante
-router.put("/vacantes/:id", actualizarVacante);
+// empresa
+router.post("/", verificarToken, crearVacante);
+router.put("/:id", verificarToken, actualizarVacante);
+router.delete("/:id", verificarToken, eliminarVacante);
 
 export default router;
